@@ -1,0 +1,39 @@
+{
+  "name": "electron_project",
+  "productName": "Electron Project",
+  "description": "Aplicação desktop feita com Electron",
+  "author": "Arthur Nascimento",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^12.9.0",
+    "bootstrap": "^5.3.8",
+    "datatables.net-bs5": "^2.3.7",
+    "electron-squirrel-startup": "^1.0.1",
+    "jquery": "^4.0.0",
+    "knex": "^3.2.9"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-rpm": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "@electron-forge/maker-zip": "^7.11.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
+    "@electron-forge/plugin-fuses": "^7.11.1",
+    "@electron/fuses": "^1.8.0",
+    "@electron/rebuild": "^4.0.4",
+    "electron": "^41.2.2",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <title>teste</title>
+        <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="./global.css">
+        <link rel="stylesheet" href="../../node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css">
+        <!-- <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+        <script src="../../node_modules/datatables.net/js/jquery.dataTables.min.js"></script> -->
+    </head>
+    <body>
+        <p id="result"></p>
+        <input id="name" type="text">
+        <button class="btn btn-primary" id="send">Enviar</button>
+        <table id="tabela">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Idade</th>
+                    <th>Endereço</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nome</td>
+                    <td>Idade</td>
+                    <td>Endereço</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+    <script src="../../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../../node_modules/datatables.net/js/dataTables.min.js"></script>
+    <script src="../../node_modules/datatables.net-bs5/js/dataTables.bootstrap5.min.js"></script>
+    <script type="module" src="./global.js"></script>
+
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            window.electronAPI.send("mainWindowLoaded");
+            window.electronAPI.on("resultSend", function(evt, result) {
+                let resultEl = document.getElementById("result");
+                console.log(result);
+                for(var i = 0; i < result.length; i++) {
+                    resultEl.innerHTML += "Nome: " + result[i].name + "<br/>";
+                }
+            });
+            window.electronAPI.send("sendMsg", "Mensagem");
+
+            let button = document.getElementById("send");
+
+            button.addEventListener("click", function () {
+                window.electronAPI.send("clicked", "Clicou no botão");
+
+                let name = document.getElementById("name").value;
+
+                window.electronAPI.send("products:insert", name);
+            });
+        });
+
+        $(document).ready(function () {
+            new DataTable('#tabela');
+        });
+    </script>
+</html>
