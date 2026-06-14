@@ -2,20 +2,44 @@ import { knex } from "../schema";
 
 export type Order = {
     id: number,
+    client_id: number,
+    // date: Date,
     declared_value: number,
-    entry_value: number,
-    final_value: number,
+    entry_value: number | null,
+    final_value: number | null,
     created_at: Date,
-    delivery_date: Date,
+    delivery_date: Date | null,
 }
 
+type OrderUpdatableFields =
+  | "delivery_date"
+  | "declared_value"
+  | "entry_value"
+  | "final_value"
+  | "created_at";
+
 /** Campos gravados por `update` na tabela `orders` (evita import circular com `ordersService`). */
-export interface OrderRepositoryUpdate {
-    delivery_date: Date;
-    declared_value: number;
-    entry_value: number;
-    final_value: number;
-}
+// export interface OrderRepositoryUpdate {
+//     delivery_date: Date;
+//     declared_value: number;
+//     entry_value: number;
+//     final_value: number;
+// }
+
+export type OrderRepositoryUpdate = Partial<Pick<Order, OrderUpdatableFields>>
+
+// export type NewOrder = {
+//     client_id: number;
+//     declared_value: number;
+//     delivery_date?: Date | null;
+//     entry_value?: number | null;
+//     final_value?: number | null;
+//     created_at: Date
+//     // created_at: Date;
+// };
+
+// Sim, newOrder é o tipo Order sem o campo 'id'.
+export type NewOrder = Omit<Order, "id" | "created_at">;
 
 export type OrderWithProductAndClient = Order &
     OrderProductInfo &
@@ -32,29 +56,49 @@ type OrderProductInfo = {
   };
 
 export class OrdersRepository {
-    async getAll(orderId: number): Promise<OrderWithProductAndClient[] | false> {
+    async getAll(): Promise<OrderWithProductAndClient[] | false> {
         try {
-            // const result = await knex('orders as o')
-            //     .join('order_products as op', 'o.id', 'op.order_id')
-            //     .join('products as p', 'p.id', 'op.product_id')
-            //     .join('clients as c', 'o.client_id', 'c.id')
-            //     .where('o.id', orderId)
-            //     .select(
-            //         'o.id',
-            //         'o.declared_value',
-            //         'o.entry_value',
-            //         'o.final_value',
-            //         'o.created_at',
-            //         'o.delivery_date',
-            //         'op.product_id as product_id',
-            //         'p.name as product_name',
-            //         'c.name as client_name',
-            //         'op.product_qty'
-            //     );
-
-            const result = knex.select("*").from("orders");
+            const result = await knex('orders as o')
+                .join('order_products as op', 'o.id', 'op.order_id')
+                .join('products as p', 'p.id', 'op.product_id')
+                .join('clients as c', 'o.client_id', 'c.id')
+                .select(
+                    'o.id',
+                    'o.declared_value',
+                    'o.entry_value',
+                    'o.final_value',
+                    'o.created_at',
+                    'o.delivery_date',
+                    'op.product_id as product_id',
+                    'p.name as product_name',
+                    'c.id as client_id',
+                    'c.name as client_name',
+                    'op.product_qty'
+                )
+                .orderBy('o.id', 'desc');
 
             return result;
+        } catch {
+            return false;
+        }
+    }
+
+    async set(order: NewOrder): Promise<number | false> {
+        try {
+            const [orderId] = await knex("orders").insert({
+                client_id: order.client_id,
+                // created_at: order.created_at,
+                delivery_date: order.delivery_date ?? null,
+                declared_value: order.declared_value,
+                entry_value: order.entry_value ?? null,
+                final_value: order.final_value ?? null,
+            });
+
+            if (!orderId) {
+                return false;
+            }
+
+            return orderId;
         } catch {
             return false;
         }
@@ -76,6 +120,7 @@ export class OrdersRepository {
                     'o.delivery_date',
                     'op.product_id as product_id',
                     'p.name as product_name',
+                    'c.id as client_id',
                     'c.name as client_name',
                     'op.product_qty'
                 );
@@ -135,6 +180,15 @@ export class OrdersRepository {
                 .where("product_id", productId)
                 .decrement("product_qty", qty);
 
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    async delete(orderId: number): Promise<boolean> {
+        try {
+            await knex("orders").where("id", orderId).del();
             return true;
         } catch {
             return false;
